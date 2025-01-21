@@ -82,14 +82,13 @@ fn main() {
             acc
         });
     println!("Windows envvars:\n{}", win_vars);
-    let command = format!("& {{ {}; {} }}", win_vars, exe_path);
+    let command = format!("& {{ {}; {} {} }}", win_vars, exe_path, exe_args.join(" "));
+    // println!("Exe args: {:?}", exe_args);
 
     let mut exec_out =
         Command::new("/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")
             .arg("-Command")
             .arg(command)
-            .arg(exe_path)
-            .args(exe_args)
             .spawn()
             .expect("Expected exec to work");
     exec_out.wait().unwrap();
