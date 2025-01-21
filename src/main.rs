@@ -16,10 +16,6 @@ use cargo_metadata::Message;
 // }
 
 fn main() {
-    // --a
-    // -- --a
-    // --a -- --b
-
     let args: Vec<String> = env::args().skip(2).collect();
     // println!("Args: {:?}", args);
     let mut args_iter = args.split_inclusive(|arg| *arg == "--");
@@ -78,9 +74,20 @@ fn main() {
 
     println!("Build success, exe location: {:?}", exe_path);
 
+    let win_vars: String = std::env::vars()
+        .filter(|(k, _)| k.starts_with("WIN_"))
+        .map(|(k, v)| format!("$env:{}='{}'; ", &k[4..], v))
+        .fold("".to_owned(), |mut acc, v| {
+            acc += &v;
+            acc
+        });
+    println!("Windows envvars:\n{}", win_vars);
+    let command = format!("& {{ {}; {} }}", win_vars, exe_path);
+
     let mut exec_out =
         Command::new("/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")
             .arg("-Command")
+            .arg(command)
             .arg(exe_path)
             .args(exe_args)
             .spawn()
